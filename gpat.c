@@ -7,11 +7,11 @@
 
 char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
 
-float points(char letterGrade[]) {
-    float gradePoints[] = {0.00, 0.67, 1.00, 1.33, 1.67, 2.00, 2.33, 2.67, 3.00, 3.33, 3.67, 4.00};
+char* points(char letterGrade[]) {
+    char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
     for (int i = 0; i < 12; i++){
         if (!strcmp(grade[i],letterGrade)) {
-            //printf("%f", gradePoints[i]);
+            //printf("%f",*pointsEarned);
             return gradePoints[i];
             break;
         }
@@ -29,7 +29,7 @@ bool validGrade(char letterGrade[]) {
 }
 
 int print() {
-  FILE *dataFile = fopen("gpat.data","r");
+  FILE* dataFile = fopen("gpat.data","r");
   char buffer[20];
   if (!dataFile) {
     perror("You do not have any classes stored yet ");
@@ -46,9 +46,9 @@ int print() {
 int add() {
   // TODO: file error handling
   char fileInput[10];
-  float* gradePoints = malloc(sizeof(gradePoints));
+  char* gradePoints = malloc(sizeof(gradePoints) * 4);
   bool valid;
-  FILE *dataFile = fopen("gpat.data", "a");
+  FILE* dataFile = fopen("gpat.data", "a");
 
   printf("Class Name: ");
   scanf("%[^\n]%*c", &fileInput);
@@ -69,11 +69,14 @@ int add() {
   fputs(fileInput, dataFile);
   fputs("    ", dataFile);
   *gradePoints = points(fileInput);
-  int retErr = fwrite(gradePoints, sizeof(gradePoints) , 1, dataFile);
+  if (gradePoints) {
+      //printf("%s",gradePoints);
+      fputs(gradePoints,dataFile);
+      free(gradePoints);
+  }
   fputs("\n", dataFile);
 
   fclose(dataFile);
-  free(gradePoints);
   return 0;
 }
 
