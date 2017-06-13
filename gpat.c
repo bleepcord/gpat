@@ -9,10 +9,13 @@ char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "
 
 char* points(char letterGrade[]) {
     char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
+    char *retPoints = malloc(sizeof(retPoints) * 4);
     for (int i = 0; i < 12; i++){
         if (!strcmp(grade[i],letterGrade)) {
-            //printf("%f",*pointsEarned);
-            return gradePoints[i];
+            for (int c = 0; c <= 3; c++) { // TODO: refactor
+                retPoints[c] = gradePoints[i][c];
+            }
+            return retPoints;
             break;
         }
     }
@@ -44,40 +47,38 @@ int print() {
 }
 
 int add() {
-  // TODO: file error handling
-  char fileInput[10];
-  char* gradePoints = malloc(sizeof(gradePoints) * 4);
-  bool valid;
-  FILE* dataFile = fopen("gpat.data", "a");
+    // TODO: file error handling
+    char fileInput[10];
+    char* gradePoints = malloc(sizeof(gradePoints) * 4);
+    bool valid;
+    FILE* dataFile = fopen("gpat.data", "a");
 
-  printf("Class Name: ");
-  scanf("%[^\n]%*c", &fileInput);
-  fputs(fileInput, dataFile);
-  fputs("    ", dataFile);
-  printf("Credit Hours: ");
-  scanf("%[^\n]%*c", &fileInput);
-  fputs(fileInput, dataFile);
-  fputs("    ", dataFile);
-  do {
-    printf("Letter Grade: ");
+    printf("Class Name: ");
     scanf("%[^\n]%*c", &fileInput);
-    valid = validGrade(fileInput);
-    if (!valid){
-      printf("Invalid grade.\n");
-    }
-  } while (!valid);
-  fputs(fileInput, dataFile);
-  fputs("    ", dataFile);
-  *gradePoints = points(fileInput);
-  if (gradePoints) {
-      //printf("%s",gradePoints);
-      fputs(gradePoints,dataFile);
-      free(gradePoints);
-  }
-  fputs("\n", dataFile);
+    fputs(fileInput, dataFile);
+    fputs("    ", dataFile);
+    printf("Credit Hours: ");
+    scanf("%[^\n]%*c", &fileInput);
+    fputs(fileInput, dataFile);
+    fputs("    ", dataFile);
+    do {
+        printf("Letter Grade: ");
+        scanf("%[^\n]%*c", &fileInput);
+        valid = validGrade(fileInput);
+        if (!valid){
+            printf("Invalid grade.\n");
+        }
+    } while (!valid);
+    fputs(fileInput, dataFile);
+    fputs("    ", dataFile);
+    gradePoints = points(fileInput);
+    //printf("%s",gradePoints);
+    fputs(gradePoints,dataFile);
+    free(gradePoints);
+    fputs("\n", dataFile);
 
-  fclose(dataFile);
-  return 0;
+    fclose(dataFile);
+    return 0;
 }
 
 int del() {
