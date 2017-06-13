@@ -4,15 +4,15 @@
 
 
 // TODO: document this mess
-
 char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
 
-char* points(char letterGrade[]) {
+char* points(char letterGrade[])
+{
     char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
-    char *retPoints = malloc(sizeof(retPoints) * 4);
+    char *retPoints = malloc(sizeof(retPoints));
     for (int i = 0; i < 12; i++){
         if (!strcmp(grade[i],letterGrade)) {
-            for (int c = 0; c <= 3; c++) { // TODO: refactor
+            for (int c = 0; c <= 3; c++) { // TODO: refactor, strcpy?
                 retPoints[c] = gradePoints[i][c];
             }
             return retPoints;
@@ -21,35 +21,38 @@ char* points(char letterGrade[]) {
     }
 }
 
-bool validGrade(char letterGrade[]) {
-  for (int i = 0; i < 12; i++) {
-    if (!strcmp(grade[i],letterGrade)) {
-      return true;
-      break;
+bool validGrade(char letterGrade[])
+{
+    for (int i = 0; i < 12; i++) {
+        if (!strcmp(grade[i],letterGrade)) {
+            return true;
+            break;
+        }
     }
-  }
-  return false;
+    return false;
 }
 
-int print() {
-  FILE* dataFile = fopen("gpat.data","r");
-  char buffer[20];
-  if (!dataFile) {
-    perror("You do not have any classes stored yet ");
-    return EXIT_FAILURE;
-  } else {
-    while (fgets(buffer, sizeof buffer, dataFile) != NULL){
-      printf("%s", buffer);
+int print()
+{
+    FILE* dataFile = fopen("gpat.data","r");
+    char buffer[20];
+    if (!dataFile) {
+        perror("You do not have any classes stored yet ");
+        return EXIT_FAILURE;
+    } else {
+        while (fgets(buffer, sizeof buffer, dataFile) != NULL){
+            printf("%s", buffer);
+        }
+        fclose(dataFile);
     }
-    fclose(dataFile);
-  }
-  return 0;
+    return 0;
 }
 
-int add() {
+int add()
+{
     // TODO: file error handling
     char fileInput[10];
-    char* gradePoints = malloc(sizeof(gradePoints) * 4);
+    char* gradePoints;
     bool valid;
     FILE* dataFile = fopen("gpat.data", "a");
 
@@ -72,66 +75,70 @@ int add() {
     fputs(fileInput, dataFile);
     fputs("    ", dataFile);
     gradePoints = points(fileInput);
-    //printf("%s",gradePoints);
-    fputs(gradePoints,dataFile);
-    free(gradePoints);
+    if (gradePoints) {
+        fputs(gradePoints,dataFile);
+        free(gradePoints);
+    }
     fputs("\n", dataFile);
 
     fclose(dataFile);
     return 0;
 }
 
-int del() {
-  printf("external delete\n");
-  return 0;
+int del()
+{
+    printf("external delete\n");
+    return 0;
 }
 
-int clearall() {
-  // TODO: error handleing
-  remove("gpat.data");
-  return 0;
+int clearall()
+{
+    // TODO: error handleing
+    remove("gpat.data");
+    return 0;
 }
 
-int whatif() {
-  printf("external whatif\n");
-  return 0;
+int whatif()
+{
+    printf("external whatif\n");
+    return 0;
 }
 
 int main()
 {
-  printf("Welcome to gpat! Type \"help\" for a list of valid commands!\n");
+    printf("Welcome to gpat! Type \"help\" for a list of valid commands!\n");
 
-  char inputCmd[10];
-  char yn;
+    char inputCmd[10];
+    char yn;
 
-  while (1) {
-    printf("gpat > ");
-    scanf("%[^\n]%*c", &inputCmd);
-
-    if (!strcmp(inputCmd,"help")) {
-      printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
-      } else if (!strcmp(inputCmd,"print")) {
-        print();
-      } else if (!strcmp(inputCmd,"add")) {
-        add();
-      } else if (!strcmp(inputCmd,"delete")) {
-        del();
-      } else if (!strcmp(inputCmd,"clearall")) {
-        printf("Are you sure you would like to delete the data file containing your classes and grades? This cannot be undone. (y/n) ");
+    while (1) {
+        printf("gpat > ");
         scanf("%[^\n]%*c", &inputCmd);
-        if (!strcmp(inputCmd,"y")) {
-          clearall();
-          printf("Data file has successfully been deleted.\n");
+
+        if (!strcmp(inputCmd,"help")) {
+            printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
+        } else if (!strcmp(inputCmd,"print")) {
+            print();
+        } else if (!strcmp(inputCmd,"add")) {
+            add();
+        } else if (!strcmp(inputCmd,"delete")) {
+            del();
+        } else if (!strcmp(inputCmd,"clearall")) {
+            printf("Are you sure you would like to delete the data file containing your classes and grades? This cannot be undone. (y/n) ");
+            scanf("%[^\n]%*c", &inputCmd);
+            if (!strcmp(inputCmd,"y")) {
+                clearall();
+                printf("Data file has successfully been deleted.\n");
+            } else {
+                printf("Data file has not been deleted.\n");
+            }
+        } else if (!strcmp(inputCmd,"whatif")) {
+            whatif();
+        } else if (!strcmp(inputCmd,"quit")) {
+            printf("\nThank you for using gpat!\n\n");
+            break;
         } else {
-          printf("Data file has not been deleted.\n");
+            printf("%s is not a valid command. Type \"help\" for a list of valid commands.\n", inputCmd);
         }
-      } else if (!strcmp(inputCmd,"whatif")) {
-        whatif();
-      } else if (!strcmp(inputCmd,"quit")) {
-        printf("\nThank you for using gpat!\n\n");
-        break;
-      } else {
-        printf("%s is not a valid command. Type \"help\" for a list of valid commands.\n", inputCmd);
     }
-  }
 }
