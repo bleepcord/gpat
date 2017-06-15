@@ -34,8 +34,9 @@ bool validGrade(char letterGrade[])
 
 int print()
 {
+    int maxLineSize = 100;
     FILE* dataFile = fopen("gpat.data","r");
-    char buffer[20];
+    char buffer[maxLineSize];
     if (!dataFile) {
         perror("You do not have any classes stored yet ");
         return EXIT_FAILURE;
@@ -87,7 +88,42 @@ int add()
 
 int del()
 {
-    printf("external delete\n");
+    char classToDelete[10];
+    int maxLineSize = 100;
+    FILE* tempFile = fopen("temp.data", "a");
+    FILE* dataFile = fopen("gpat.data","r");
+    char buffer[maxLineSize];
+    int count = 0;
+
+    if (!dataFile) {
+        perror("You do not have any classes stored yet ");
+        return EXIT_FAILURE;
+    } else {
+        while (fgets(buffer, sizeof buffer, dataFile) != NULL){
+            printf("%s", buffer);
+        }
+        fclose(dataFile);
+        FILE* dataFile = fopen("gpat.data","r");
+
+        printf("\nClass to delete: ");
+        scanf("%[^\n]%*c", &classToDelete);
+
+        while (fgets(buffer, sizeof buffer, dataFile) != NULL){
+            if (!strstr(buffer,classToDelete)) {
+                fputs(buffer,tempFile);
+            } else {
+                count++;
+            }
+        }
+    }
+
+
+    printf("Deleted %d classes.\n", count);
+
+    remove("gpat.data");
+    fclose(tempFile);
+    rename("temp.data", "gpat.data");
+
     return 0;
 }
 
@@ -104,6 +140,11 @@ int whatif()
     return 0;
 }
 
+int printHelp()
+{
+    printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
+}
+
 int main()
 {
     printf("Welcome to gpat! Type \"help\" for a list of valid commands!\n");
@@ -116,7 +157,7 @@ int main()
         scanf("%[^\n]%*c", &inputCmd);
 
         if (!strcmp(inputCmd,"help")) {
-            printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
+            printHelp();
         } else if (!strcmp(inputCmd,"print")) {
             print();
         } else if (!strcmp(inputCmd,"add")) {
