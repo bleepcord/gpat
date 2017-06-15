@@ -103,7 +103,7 @@ int del()
             printf("%s", buffer);
         }
         fclose(dataFile);
-        FILE* dataFile = fopen("gpat.data","r");
+        dataFile = fopen("gpat.data", "r");
 
         printf("\nClass to delete: ");
         scanf("%[^\n]%*c", &classToDelete);
@@ -120,6 +120,7 @@ int del()
 
     printf("Deleted %d classes.\n", count);
 
+    fclose(dataFile);
     remove("gpat.data");
     fclose(tempFile);
     rename("temp.data", "gpat.data");
@@ -143,6 +144,7 @@ int whatif()
 int printHelp()
 {
     printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
+    return 0;
 }
 
 int main()
