@@ -88,19 +88,23 @@ int add()
 
 int del()
 {
+    // TODO: error checking
     char classToDelete[10];
     int maxLineSize = 100;
     FILE* tempFile = fopen("temp.data", "a");
     FILE* dataFile = fopen("gpat.data","r");
     char buffer[maxLineSize];
-    int count = 0;
+    int deleteCount = 0;
 
     if (!dataFile) {
         perror("You do not have any classes stored yet ");
         return EXIT_FAILURE;
     } else {
+        int fileLineCount = 0;
+
         while (fgets(buffer, sizeof buffer, dataFile) != NULL){
             printf("%s", buffer);
+            fileLineCount++;
         }
         fclose(dataFile);
         dataFile = fopen("gpat.data", "r");
@@ -112,20 +116,34 @@ int del()
             if (!strstr(buffer,classToDelete)) {
                 fputs(buffer,tempFile);
             } else {
-                count++;
+                deleteCount++;
             }
+        }
+
+        // delete data file if this function results in an empty file
+        if (deleteCount == fileLineCount) {
+            fclose(dataFile);
+            fclose(tempFile);
+            dataFile = NULL;
+            tempFile = NULL;
+            remove("gpat.data");
+            remove("temp.data");
         }
     }
 
+    printf("Deleted %d classes.\n", deleteCount);
 
-    printf("Deleted %d classes.\n", count);
+    // close files if not closed earlier
+    if (dataFile) {
+        fclose(dataFile);
+        remove("gpat.data");
+    }
+    if (tempFile) {
+        fclose(tempFile);
+        rename("temp.data", "gpat.data");
+    }
 
-    fclose(dataFile);
-    remove("gpat.data");
-    fclose(tempFile);
-    rename("temp.data", "gpat.data");
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int clearall()
