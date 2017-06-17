@@ -46,7 +46,7 @@ int print()
         }
         fclose(dataFile);
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int add()
@@ -83,7 +83,7 @@ int add()
     fputs("\n", dataFile);
 
     fclose(dataFile);
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int del()
@@ -120,7 +120,7 @@ int del()
             }
         }
 
-        // delete data file if this function results in an empty file
+        // delete data file if this function results in an empty file, reset file pointers to NULL
         if (deleteCount == fileLineCount) {
             fclose(dataFile);
             fclose(tempFile);
@@ -150,19 +150,19 @@ int clearall()
 {
     // TODO: error handleing
     remove("gpat.data");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int whatif()
 {
     printf("external whatif\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int printHelp()
 {
     printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int main()
@@ -202,4 +202,6 @@ int main()
             printf("%s is not a valid command. Type \"help\" for a list of valid commands.\n", inputCmd);
         }
     }
+
+    return EXIT_SUCCESS;
 }
