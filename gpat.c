@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <string.h>
 
 // TODO: document this mess
 char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
@@ -32,19 +32,65 @@ bool validGrade(char letterGrade[])
     return false;
 }
 
+double calculateGPA(double creditHours[], double gradePoints[], int numberOfGrades) {
+    double totalHours;
+    double totalGradePoints;
+
+    for (int i = 0; i < numberOfGrades; i++) {
+        totalHours += creditHours[i];
+        gradePoints[i] = creditHours[i] * gradePoints[i];
+        totalGradePoints += gradePoints[i];
+    }
+
+    return totalGradePoints / totalHours;
+}
+
 int print()
 {
-    int maxLineSize = 100;
+    char classes[10][10]; //TODO: limit class name length on entry to avoid overflow
+    double creditHours[10];
+    char grades[10][3];
+    double gradePoints[10];
     FILE* dataFile = fopen("gpat.data","r");
+    int maxLineSize = 100;
     char buffer[maxLineSize];
+
+    // parse data file and organize tokens
     if (!dataFile) {
         perror("You do not have any classes stored yet ");
         return EXIT_FAILURE;
     } else {
+        char* token = NULL;
+        int tokenc = 0;
+        int linec = 0;
         while (fgets(buffer, sizeof buffer, dataFile) != NULL){
-            printf("%s", buffer);
+            token = strtok(buffer,"|");
+            while (token != NULL) {
+                if (tokenc % 4 == 0) {
+                    strcpy(classes[linec], token);
+                } else if(tokenc % 4 == 1){
+                    creditHours[linec] = strtold(token, NULL);
+                } else if(tokenc % 4 == 2){
+                    strcpy(grades[linec], token);
+                } else if(tokenc % 4 == 3){
+                    gradePoints[linec] = strtold(token, NULL);
+                }
+                token = strtok(NULL,"|");
+                tokenc++;
+            }
+            linec++;
         }
+
+
         fclose(dataFile);
+
+        printf("\nClass / Credits / Grade / Points\n\n");
+        for (int i = 0; i < linec; i++) {
+            printf("%.40s / %.2f / %.2s / %.2f\n", classes[i], creditHours[i], grades[i], gradePoints[i]);
+        }
+
+        double gpa = calculateGPA(creditHours, gradePoints, linec);
+        printf("\nCumulative GPA: %.2f\n\n", gpa);
     }
     return EXIT_SUCCESS;
 }
@@ -60,11 +106,11 @@ int add()
     printf("Class Name: ");
     scanf("%[^\n]%*c", &fileInput);
     fputs(fileInput, dataFile);
-    fputs("    ", dataFile);
+    fputs("|", dataFile);
     printf("Credit Hours: ");
     scanf("%[^\n]%*c", &fileInput);
     fputs(fileInput, dataFile);
-    fputs("    ", dataFile);
+    fputs("|", dataFile);
     do {
         printf("Letter Grade: ");
         scanf("%[^\n]%*c", &fileInput);
@@ -74,7 +120,7 @@ int add()
         }
     } while (!valid);
     fputs(fileInput, dataFile);
-    fputs("    ", dataFile);
+    fputs("|", dataFile);
     gradePoints = points(fileInput);
     if (gradePoints) {
         fputs(gradePoints,dataFile);
