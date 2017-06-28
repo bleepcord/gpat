@@ -132,7 +132,7 @@ int add()
     return EXIT_SUCCESS;
 }
 
-int del()
+int delete()
 {
     // TODO: error checking
     char classToDelete[10];
@@ -229,7 +229,7 @@ int main()
         } else if (!strcmp(inputCmd,"add")) {
             add();
         } else if (!strcmp(inputCmd,"delete")) {
-            del();
+            delete();
         } else if (!strcmp(inputCmd,"clearall")) {
             printf("Are you sure you would like to delete the data file containing your classes and grades? This cannot be undone. (y/n) ");
             scanf("%[^\n]%*c", &inputCmd);
