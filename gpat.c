@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <getopt.h>
 
 // TODO: document this mess
 char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
@@ -95,36 +96,24 @@ int print()
     return EXIT_SUCCESS;
 }
 
-int add()
+int add(char* class, char* credits, char* grade)
 {
-    // TODO: file error handling
-    char fileInput[10];
+    // TODO: file error handling, check grade validity before using it as argument for this function
     char* gradePoints;
-    bool valid;
     FILE* dataFile = fopen("gpat.data", "a");
 
-    printf("Class Name: ");
-    scanf("%[^\n]%*c", &fileInput);
-    fputs(fileInput, dataFile);
+    fputs(class, dataFile);
     fputs("|", dataFile);
-    printf("Credit Hours: ");
-    scanf("%[^\n]%*c", &fileInput);
-    fputs(fileInput, dataFile);
+    fputs(credits, dataFile);
     fputs("|", dataFile);
-    do {
-        printf("Letter Grade: ");
-        scanf("%[^\n]%*c", &fileInput);
-        valid = validGrade(fileInput);
-        if (!valid){
-            printf("Invalid grade.\n");
-        }
-    } while (!valid);
-    fputs(fileInput, dataFile);
+    fputs(grade, dataFile);
     fputs("|", dataFile);
-    gradePoints = points(fileInput);
+    gradePoints = points(grade);
     if (gradePoints) {
         fputs(gradePoints,dataFile);
         free(gradePoints);
+    } else {
+        return EXIT_FAILURE;
     }
     fputs("\n", dataFile);
 
@@ -132,10 +121,9 @@ int add()
     return EXIT_SUCCESS;
 }
 
-int delete()
+int delete(char* classToDelete)
 {
     // TODO: error checking
-    char classToDelete[10];
     int maxLineSize = 100;
     FILE* tempFile = fopen("temp.data", "a");
     FILE* dataFile = fopen("gpat.data","r");
@@ -154,9 +142,6 @@ int delete()
         }
         fclose(dataFile);
         dataFile = fopen("gpat.data", "r");
-
-        printf("\nClass to delete: ");
-        scanf("%[^\n]%*c", &classToDelete);
 
         while (fgets(buffer, sizeof buffer, dataFile) != NULL){
             if (!strstr(buffer,classToDelete)) {
@@ -194,7 +179,7 @@ int delete()
 
 int clearall()
 {
-    // TODO: error handleing
+    // TODO: error handleing, add sanity check before calling remove
     remove("gpat.data");
     return EXIT_SUCCESS;
 }
@@ -207,46 +192,70 @@ int whatif()
 
 int printHelp()
 {
+    //TODO: update printhelp function to fit new program functionality
     printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
     return EXIT_SUCCESS;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    printf("Welcome to gpat! Type \"help\" for a list of valid commands!\n");
+    const char* shortopts = "a:c:g:d:prhw";
+    const struct option longopts[] = {
+        {"add", required_argument, NULL, 'a'},
+        {"credits", required_argument, NULL, 'c'},
+        {"grade", required_argument, NULL, 'g'},
+        {"delete", required_argument, NULL, 'd'},
+        {"print", no_argument, NULL, 'p'},
+        {"reset", no_argument, NULL, 'r'},
+        {"help", no_argument, NULL, 'h'},
+        {"whatif", no_argument, NULL, 'w'}
+        //{NULL, 0, NULL, 0}
+    };
 
-    char inputCmd[10];
-    char yn;
+    bool addFuncActive = false;
+    bool deleteFuncActive = false;
+    char* class = NULL;
+    char* credits = NULL;
+    char* grade = NULL;
+    int argument = NULL;
 
-    while (1) {
-        printf("gpat > ");
-        scanf("%[^\n]%*c", &inputCmd);
-
-        if (!strcmp(inputCmd,"help")) {
-            printHelp();
-        } else if (!strcmp(inputCmd,"print")) {
-            print();
-        } else if (!strcmp(inputCmd,"add")) {
-            add();
-        } else if (!strcmp(inputCmd,"delete")) {
-            delete();
-        } else if (!strcmp(inputCmd,"clearall")) {
-            printf("Are you sure you would like to delete the data file containing your classes and grades? This cannot be undone. (y/n) ");
-            scanf("%[^\n]%*c", &inputCmd);
-            if (!strcmp(inputCmd,"y")) {
-                clearall();
-                printf("Data file has successfully been deleted.\n");
-            } else {
-                printf("Data file has not been deleted.\n");
-            }
-        } else if (!strcmp(inputCmd,"whatif")) {
-            whatif();
-        } else if (!strcmp(inputCmd,"quit")) {
-            printf("\nThank you for using gpat!\n\n");
+    while ((argument = getopt_long(argc, argv, shortopts, longopts, NULL)) != -1) {
+        switch(argument) {
+        case 'a':
+            addFuncActive = true;
+            class = optarg;
             break;
-        } else {
-            printf("%s is not a valid command. Type \"help\" for a list of valid commands.\n", inputCmd);
+        case 'c':
+            credits = optarg;
+            break;
+        case 'g':
+            grade = optarg;
+            break;
+        case 'd':
+            deleteFuncActive = true;
+            class = optarg;
+            break;
+        case 'p':
+            print();
+            break;
+        case 'r':
+            clearall();
+            break;
+        case 'h':
+            printHelp();
+            break;
+        case 'w':
+            printf("TODO: whatif report\n");
+            break;
         }
+    }
+
+    if (addFuncActive && deleteFuncActive) {
+        printf("You cannot both add and delete at the same time\n");
+    } else if (addFuncActive && !deleteFuncActive) {
+        add(class, credits, grade);
+    } else if (deleteFuncActive && !addFuncActive) {
+        delete(class);
     }
 
     return EXIT_SUCCESS;
