@@ -5,11 +5,11 @@
 #include <getopt.h>
 
 // TODO: document this mess
-char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
 
 char* points(char letterGrade[])
 {
     char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
+    char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
     char *retPoints = malloc(sizeof(retPoints));
     for (int i = 0; i < 12; i++){
         if (!strcmp(grade[i],letterGrade)) {
@@ -24,6 +24,7 @@ char* points(char letterGrade[])
 
 bool validGrade(char letterGrade[])
 {
+    char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
     for (int i = 0; i < 12; i++) {
         if (!strcmp(grade[i],letterGrade)) {
             return true;
@@ -254,11 +255,16 @@ int main(int argc, char *argv[])
         printf("You cannot both add and delete at the same time.\n");
         return EXIT_SUCCESS;
     } else if (addFuncActive && !deleteFuncActive) {
-        if (validGrade(grade)) {
-            add(class, credits, grade);
-            return EXIT_SUCCESS;
+        if (class && grade && credits) {
+            if (validGrade(grade)) {
+                add(class, credits, grade);
+                return EXIT_SUCCESS;
+            } else {
+                printf("That is not a valid grade.\n");
+                return EXIT_FAILURE;
+            }
         } else {
-            printf("That is not a valid grade.\n");
+            printf("Please call the \"-a\" flag only if you call it with the \"-c\" and \"-g\" flags.\n");
             return EXIT_FAILURE;
         }
     } else if (deleteFuncActive && !addFuncActive) {
