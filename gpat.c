@@ -251,11 +251,19 @@ int main(int argc, char *argv[])
     }
 
     if (addFuncActive && deleteFuncActive) {
-        printf("You cannot both add and delete at the same time\n");
+        printf("You cannot both add and delete at the same time.\n");
+        return EXIT_SUCCESS;
     } else if (addFuncActive && !deleteFuncActive) {
-        add(class, credits, grade);
+        if (validGrade(grade)) {
+            add(class, credits, grade);
+            return EXIT_SUCCESS;
+        } else {
+            printf("That is not a valid grade.\n");
+            return EXIT_FAILURE;
+        }
     } else if (deleteFuncActive && !addFuncActive) {
         delete(class);
+        return EXIT_SUCCESS;
     }
 
     return EXIT_SUCCESS;
