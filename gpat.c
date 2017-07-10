@@ -9,6 +9,7 @@
 char* points(char letterGrade[])
 {
     char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
+    //TODO: move grade arrays out of this and the next function and into grade processing function
     char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
     char *retPoints = malloc(sizeof(retPoints));
     for (int i = 0; i < 12; i++){
