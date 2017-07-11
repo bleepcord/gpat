@@ -194,8 +194,7 @@ int whatif()
 
 int printHelp()
 {
-    //TODO: update printhelp function to fit new program functionality
-    printf("usage: gpat [actions]\n\n"
+    printf("\nusage: gpat [actions]\n\n"
            "--add (-a) add a class to the data file. \"-a class_name\" or \"-a \'class name\'\".\n"
            "           This flag must be used with the \'-c\' and the \'-g\' flag.\n"
            "--credits (-c) the amount of credits the class being added is worth.\n"
@@ -260,6 +259,8 @@ int main(int argc, char *argv[])
         case 'w':
             printf("TODO: whatif report\n");
             break;
+        default:
+            printHelp();
         }
     }
 
