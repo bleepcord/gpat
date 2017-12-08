@@ -5,10 +5,10 @@ OBJS = gpat.c
 CC = gcc
 
 #COMPILER_FLAGS for additional options
-COMPILER_FLAGS = -w -std=c99
+COMPILER_FLAGS = -w -std=c99 -Wall -pedantic
 
 #LINKER_FLAGS specifies which libraries to use
-LINKER_FLAGS = 
+LINKER_FLAGS =
 
 #OBJ_NAME specifies the name of the executable after compilation
 OBJ_NAME = gpat
@@ -19,3 +19,6 @@ all : $(OBJS)
 
 debug : $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) -g $(LINKER_FLAGS) -o $(OBJ_NAME)
+
+optimized : $(OBJS)
+	$(CC) $(OBJS) $(COMPILER_FLAGS) -O3 -g $(LINKER_FLAGS) -o $(OBJ_NAME)
