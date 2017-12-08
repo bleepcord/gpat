@@ -3,8 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
+#include <assert.h>
 
-// TODO: document this mess
+/*
+ * gpat
+ * simple gpa tracking util
+ */
 
 char* points(char letterGrade[])
 {
@@ -13,11 +17,8 @@ char* points(char letterGrade[])
     char *retPoints = malloc(sizeof(retPoints));
     for (int i = 0; i < 12; i++){
         if (!strcmp(grade[i],letterGrade)) {
-            for (int c = 0; c <= 3; c++) { // TODO: refactor, strcpy?
-                retPoints[c] = gradePoints[i][c];
-            }
+            strcpy(retPoints, gradePoints[i]);
             return retPoints;
-            break;
         }
     }
 }
@@ -47,13 +48,13 @@ double calculateGPA(double creditHours[], double gradePoints[], int numberOfGrad
     return totalGradePoints / totalHours;
 }
 
-int print()
+int print(FILE* dataFile)
 {
     char classes[10][10]; //TODO: limit class name length on entry to avoid overflow
     double creditHours[10];
     char grades[10][3];
     double gradePoints[10];
-    FILE* dataFile = fopen("gpat.data","r");
+    //FILE* dataFile = fopen("gpat.data","r");
     int maxLineSize = 100;
     char buffer[maxLineSize];
 
@@ -66,7 +67,7 @@ int print()
         int tokenc = 0;
         int linec = 0;
         while (fgets(buffer, sizeof buffer, dataFile) != NULL){
-            token = strtok(buffer,"|");
+            token = strtok(buffer,"/");
             while (token != NULL) {
                 if (tokenc % 4 == 0) {
                     strcpy(classes[linec], token);
@@ -77,7 +78,7 @@ int print()
                 } else if(tokenc % 4 == 3){
                     gradePoints[linec] = strtold(token, NULL);
                 }
-                token = strtok(NULL,"|");
+                token = strtok(NULL,"/");
                 tokenc++;
             }
             linec++;
@@ -100,15 +101,15 @@ int print()
 int add(char* class, char* credits, char* grade)
 {
     // TODO: file error handling, check grade validity before using it as argument for this function
-    char* gradePoints;
+    char* gradePoints = NULL;
     FILE* dataFile = fopen("gpat.data", "a");
 
     fputs(class, dataFile);
-    fputs("|", dataFile);
+    fputs("/", dataFile);
     fputs(credits, dataFile);
-    fputs("|", dataFile);
+    fputs("/", dataFile);
     fputs(grade, dataFile);
-    fputs("|", dataFile);
+    fputs("/", dataFile);
     gradePoints = points(grade);
     if (gradePoints) {
         fputs(gradePoints,dataFile);
@@ -185,9 +186,55 @@ int clearall()
     return EXIT_SUCCESS;
 }
 
+/* TODO: refactor the absolute shit out of this bullshit */
 int whatif()
 {
-    printf("external whatif\n");
+    FILE* tempDataFile = fopen("temp.data", "a");
+    FILE* dataFile = fopen("gpat.data", "r");
+    int maxLineSize = 100;
+    char buffer[maxLineSize];
+    char whatifGrade[3];
+    char whatifPoints[2];
+    char* gradePoints = NULL;
+
+    /* Copy data file to temp data file. */
+    if (dataFile != NULL) {
+        while (fgets(buffer, sizeof buffer, dataFile) != NULL){
+            fputs(buffer, tempDataFile);
+        }
+    } else {
+        puts("Unable to read datafile, file may be corrupt.\n");
+        return EXIT_FAILURE;
+    }
+    fclose(dataFile);
+
+    puts("Enter grades for the what if report. When finished, enter \'x\' when prompt for a grade.\n");
+    for (;;) {
+        fputs("grade: ", stdout);
+        fgets(whatifGrade, 3, stdin);
+        while(getc(stdin) != '\n');
+        assert(whatifGrade != NULL);
+        if (validGrade(whatifGrade)) {
+            fputs("points: ", stdout);
+            fgets(whatifPoints, 2, stdin);
+            fputs("tmp/", tempDataFile);
+            fputs(whatifPoints, tempDataFile);
+            fputs("/", tempDataFile);
+            fputs(whatifGrade, tempDataFile);
+            fputs("/", tempDataFile);
+            gradePoints = points(whatifGrade);
+            fputs(gradePoints, tempDataFile);
+            fputs("\n", tempDataFile);
+        } else {
+            puts("Invalid grade");
+            return EXIT_FAILURE;
+        }
+    }
+
+    fclose(tempDataFile);
+    free(whatifGrade);
+    free(whatifPoints);
+
     return EXIT_SUCCESS;
 }
 
@@ -198,6 +245,8 @@ int printHelp()
     return EXIT_SUCCESS;
 }
 
+
+/* TODO: refactor */
 int main(int argc, char *argv[])
 {
     const char* shortopts = "a:c:g:d:prhw";
@@ -237,7 +286,8 @@ int main(int argc, char *argv[])
             class = optarg;
             break;
         case 'p':
-            print();
+            FILE* dataFile = fopen("gpat.data", "r");
+            print(dataFile);
             break;
         case 'r':
             clearall();
@@ -246,7 +296,7 @@ int main(int argc, char *argv[])
             printHelp();
             break;
         case 'w':
-            printf("TODO: whatif report\n");
+            whatif();
             break;
         }
     }
