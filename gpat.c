@@ -180,47 +180,43 @@ int clearall()
     return EXIT_SUCCESS;
 }
 
-void trimString(char* string) {
-    for (int i = 0; i < strlen(string); i++) {
-        if (string[i] == '\n' || string[i] == '\0') {
-            string[i] = NULL;
-        }
-    }
-}
-
-void flushInput() {
-    char c;
-    rewind(stdin);
-    do {
-        c = getc(stdin);
-    } while (c != '\n' && c != '\0');
-}
-
 /* start or update a whatif report
  */
-int whatif(FILE* dataFile)
+void whatif(char* class, char* credits, char* grade, FILE* dataFile)
 {
-    FILE* tempDataFile = fopen("whatif.data", "w");
+    FILE* whatifDataFile = NULL;
     const int maxLineSize = 100;
     const int gradeSize = 3;
     const int pointSize = 2;
     char buffer[maxLineSize];
-    char whatifGrade[3];
-    char whatifPoints[2];
-    char* gradePoints = NULL;
 
     /* Copy data file to temp data file. */
-    if (dataFile != NULL) {
-        while (fgets(buffer, sizeof buffer, dataFile) != NULL){
-            fputs(buffer, tempDataFile);
+    if (whatifDataFile = fopen("whatif.data", "a+")) {
+        fseek(whatifDataFile, 0, SEEK_END);
+        unsigned int len = ftell(whatifDataFile);
+        rewind(whatifDataFile);
+        if (len == 0) {
+            while (fgets(buffer, sizeof buffer, dataFile) != NULL){
+                fputs(buffer, whatifDataFile);
+            }
         }
-    } else {
+        add(class, credits, grade, whatifDataFile);
+    }
+    else {
         puts("Unable to read datafile.\n");
         return EXIT_FAILURE;
     }
-    fclose(tempDataFile);
-    print(tempDataFile);
+    print(whatifDataFile);
+    fclose(whatifDataFile);
     return EXIT_SUCCESS;
+}
+
+void pwhatif() {
+    FILE* whatifDataFile = NULL;
+    if (whatifDataFile = fopen("whatif.data", "r")) {
+        print(whatifDataFile);
+    }
+    fclose(whatifDataFile);
 }
 
 int printHelp()
@@ -233,7 +229,7 @@ int printHelp()
 /* TODO: refactor */
 int main(int argc, char *argv[])
 {
-    const char* shortopts = "a:c:g:d:prhw";
+    const char* shortopts = "a:c:g:d:prhw::";
     const struct option longopts[] = {
         {"add", required_argument, NULL, 'a'},
         {"credits", required_argument, NULL, 'c'},
@@ -242,13 +238,15 @@ int main(int argc, char *argv[])
         {"print", no_argument, NULL, 'p'},
         {"reset", no_argument, NULL, 'r'},
         {"help", no_argument, NULL, 'h'},
-        {"whatif", no_argument, NULL, 'w'}
+        {"whatif", optional_argument, NULL, 'w'}
         //{NULL, 0, NULL, 0}
     };
 
+    int retCode;
     FILE* dataFile = fopen("gpat.data", "a+");
     bool addFuncActive = false;
     bool deleteFuncActive = false;
+    bool whatifFuncActive = false;
     char* class = NULL;
     char* credits = NULL;
     char* grade = NULL;
@@ -271,7 +269,7 @@ int main(int argc, char *argv[])
             class = optarg;
             break;
         case 'p':
-            print(dataFile);
+            retCode = print(dataFile);
             break;
         case 'r':
             clearall();
@@ -280,32 +278,48 @@ int main(int argc, char *argv[])
             printHelp();
             break;
         case 'w':
-            whatif(dataFile);
+            whatifFuncActive = true;
+            class = optarg;
             break;
         }
     }
 
     if (addFuncActive && deleteFuncActive) {
         printf("You cannot both add and delete at the same time.\n");
-        return EXIT_SUCCESS;
-    } else if (addFuncActive && !deleteFuncActive) {
+        retCode = EXIT_FAILURE;
+    }
+    else if (addFuncActive && !deleteFuncActive) {
         if (class && grade && credits) {
             if (validGrade(grade)) {
                 add(class, credits, grade, dataFile);
-                return EXIT_SUCCESS;
-            } else {
-                printf("That is not a valid grade.\n");
-                return EXIT_FAILURE;
+                retCode = EXIT_SUCCESS;
             }
-        } else {
-            printf("Please call the \"-a\" flag only if you call it with the \"-c\" and \"-g\" flags.\n");
-            return EXIT_FAILURE;
+            else {
+                printf("That is not a valid grade.\n");
+                retCode = EXIT_FAILURE;
+            }
         }
-    } else if (deleteFuncActive && !addFuncActive) {
+        else {
+            printf("Please call the \"-a\" flag only if you call it with the \"-c\" and \"-g\" flags.\n");
+            retCode = EXIT_FAILURE;
+        }
+    }
+    else if (deleteFuncActive && !addFuncActive) {
         delete(class);
-        return EXIT_SUCCESS;
+        retCode = EXIT_SUCCESS;
+    }
+    else if (whatifFuncActive) {
+        if (class && grade && credits) {
+            if (validGrade(grade)) {
+                whatif(class, credits, grade, dataFile);
+            }
+        }
+        else {
+            pwhatif();
+            retCode = EXIT_SUCCESS;
+        }
     }
 
     fclose(dataFile);
-    return EXIT_SUCCESS;
+    return retCode;
 }
