@@ -8,6 +8,7 @@
 /*
  * gpat
  * simple gpa tracking util
+ * TODO: lots of valgrind errors to fix
  */
 
 char* points(char letterGrade[])
