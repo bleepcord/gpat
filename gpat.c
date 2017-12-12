@@ -54,7 +54,6 @@ int print(FILE* dataFile)
     double creditHours[10];
     char grades[10][3];
     double gradePoints[10];
-    //FILE* dataFile = fopen("gpat.data","r");
     int maxLineSize = 100;
     char buffer[maxLineSize];
 
@@ -84,9 +83,6 @@ int print(FILE* dataFile)
             linec++;
         }
 
-
-        fclose(dataFile);
-
         printf("\nClass / Credits / Grade / Points\n\n");
         for (int i = 0; i < linec; i++) {
             printf("%.40s / %.2f / %.2s / %.2f\n", classes[i], creditHours[i], grades[i], gradePoints[i]);
@@ -98,11 +94,10 @@ int print(FILE* dataFile)
     return EXIT_SUCCESS;
 }
 
-int add(char* class, char* credits, char* grade)
+int add(char* class, char* credits, char* grade, FILE* dataFile)
 {
     // TODO: file error handling, check grade validity before using it as argument for this function
     char* gradePoints = NULL;
-    FILE* dataFile = fopen("gpat.data", "a");
 
     fputs(class, dataFile);
     fputs("/", dataFile);
@@ -119,7 +114,6 @@ int add(char* class, char* credits, char* grade)
     }
     fputs("\n", dataFile);
 
-    fclose(dataFile);
     return EXIT_SUCCESS;
 }
 
@@ -186,12 +180,30 @@ int clearall()
     return EXIT_SUCCESS;
 }
 
-/* TODO: refactor the absolute shit out of this bullshit */
-int whatif()
+void trimString(char* string) {
+    for (int i = 0; i < strlen(string); i++) {
+        if (string[i] == '\n' || string[i] == '\0') {
+            string[i] = NULL;
+        }
+    }
+}
+
+void flushInput() {
+    char c;
+    rewind(stdin);
+    do {
+        c = getc(stdin);
+    } while (c != '\n' && c != '\0');
+}
+
+/* start or update a whatif report
+ */
+int whatif(FILE* dataFile)
 {
-    FILE* tempDataFile = fopen("temp.data", "a");
-    FILE* dataFile = fopen("gpat.data", "r");
-    int maxLineSize = 100;
+    FILE* tempDataFile = fopen("whatif.data", "w");
+    const int maxLineSize = 100;
+    const int gradeSize = 3;
+    const int pointSize = 2;
     char buffer[maxLineSize];
     char whatifGrade[3];
     char whatifPoints[2];
@@ -203,38 +215,11 @@ int whatif()
             fputs(buffer, tempDataFile);
         }
     } else {
-        puts("Unable to read datafile, file may be corrupt.\n");
+        puts("Unable to read datafile.\n");
         return EXIT_FAILURE;
     }
-    fclose(dataFile);
-
-    puts("Enter grades for the what if report. When finished, enter \'x\' when prompt for a grade.\n");
-    for (;;) {
-        fputs("grade: ", stdout);
-        fgets(whatifGrade, 3, stdin);
-        while(getc(stdin) != '\n');
-        assert(whatifGrade != NULL);
-        if (validGrade(whatifGrade)) {
-            fputs("points: ", stdout);
-            fgets(whatifPoints, 2, stdin);
-            fputs("tmp/", tempDataFile);
-            fputs(whatifPoints, tempDataFile);
-            fputs("/", tempDataFile);
-            fputs(whatifGrade, tempDataFile);
-            fputs("/", tempDataFile);
-            gradePoints = points(whatifGrade);
-            fputs(gradePoints, tempDataFile);
-            fputs("\n", tempDataFile);
-        } else {
-            puts("Invalid grade");
-            return EXIT_FAILURE;
-        }
-    }
-
     fclose(tempDataFile);
-    free(whatifGrade);
-    free(whatifPoints);
-
+    print(tempDataFile);
     return EXIT_SUCCESS;
 }
 
@@ -244,7 +229,6 @@ int printHelp()
     printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
     return EXIT_SUCCESS;
 }
-
 
 /* TODO: refactor */
 int main(int argc, char *argv[])
@@ -262,6 +246,7 @@ int main(int argc, char *argv[])
         //{NULL, 0, NULL, 0}
     };
 
+    FILE* dataFile = fopen("gpat.data", "a+");
     bool addFuncActive = false;
     bool deleteFuncActive = false;
     char* class = NULL;
@@ -286,7 +271,6 @@ int main(int argc, char *argv[])
             class = optarg;
             break;
         case 'p':
-            FILE* dataFile = fopen("gpat.data", "r");
             print(dataFile);
             break;
         case 'r':
@@ -296,7 +280,7 @@ int main(int argc, char *argv[])
             printHelp();
             break;
         case 'w':
-            whatif();
+            whatif(dataFile);
             break;
         }
     }
@@ -307,7 +291,7 @@ int main(int argc, char *argv[])
     } else if (addFuncActive && !deleteFuncActive) {
         if (class && grade && credits) {
             if (validGrade(grade)) {
-                add(class, credits, grade);
+                add(class, credits, grade, dataFile);
                 return EXIT_SUCCESS;
             } else {
                 printf("That is not a valid grade.\n");
@@ -322,5 +306,6 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
+    fclose(dataFile);
     return EXIT_SUCCESS;
 }
