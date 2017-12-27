@@ -14,6 +14,7 @@
 char* points(char letterGrade[])
 {
     char *gradePoints[] = {"0.00", "0.67", "1.00", "1.33", "1.67", "2.00", "2.33", "2.67", "3.00", "3.33", "3.67", "4.00"};
+    //TODO: move grade arrays out of this and the next function and into grade processing function
     char *grade[] = {"F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A"};
     char *retPoints = malloc(sizeof(retPoints));
     for (int i = 0; i < 12; i++){
@@ -222,8 +223,18 @@ void pwhatif() {
 
 int printHelp()
 {
-    //TODO: update printhelp function to fit new program functionality
-    printf("-----------------------------\n commands are case sensitive\n-----------------------------\nprint - print out a list of your classes followed by your cumulative gpa\nadd - add a class\ndelete - delete a class\nclearall - delete the datafile containing your stored classes\nwhatif - a what if report to determine gpa if your were to perform to a certain level\nquit - quit gpat\n\n");
+    printf("\nusage: gpat [actions]\n\n"
+           "--add (-a) add a class to the data file. \"-a class_name\" or \"-a \'class name\'\".\n"
+           "           This flag must be used with the \'-c\' and the \'-g\' flag.\n"
+           "--credits (-c) the amount of credits the class being added is worth.\n"
+           "--grade (-g) the letter grade received in the class.\n"
+           "--delete (-d) delete a class from the data file. \"-d class_name\" or \"-d \'class name\'\".\n"
+           "              This flag will delete all classes from the data file that contain the string passed to the flag.\n"
+           "--help (-h) Print this menu.\n"
+           "--print (-p) Print a list of classes in the data file as well as the cumulative GPA.\n"
+           "--reset (-r) Delete the data file. Only do this if you want to remove all of the classes from the data file.\n"
+           "--whatif (-w) TODO: UNIMPLEMENTED. Calculate cumulative GPA including future classes to see what the GPA would be if the student performed to a certain level.\n"
+           );
     return EXIT_SUCCESS;
 }
 
@@ -282,6 +293,8 @@ int main(int argc, char *argv[])
             whatifFuncActive = true;
             class = optarg;
             break;
+        default:
+            printHelp();
         }
     }
 
